@@ -8,15 +8,20 @@ taskRouter.use(express.json());
 // Add new task
 //duedate format -> 2024-04-10T12:00:00Z
 taskRouter.post("/create", auth, async (req, res) => {
-  const payload = req.body;
-  //   console.log("ssssssssssss", req.body);
-  const { username } = req.body;
   try {
-    const task = new taskModel(payload);
+    const { title, description, duedate } = req.body;
+    if (!title || !description || !duedate) {
+      return res
+        .status(400)
+        .json({ error: "Title, description, and duedate are required" });
+    }
+    const task = new taskModel({ title, description, duedate });
     await task.save();
+    const { username } = req.body;
     res.status(200).json({ msg: `New task has been created by ${username}` });
   } catch (error) {
-    res.status(500).json({ error });
+    console.error("Error creating task:", error);
+    res.status(500).json({ error: "Failed to create task" });
   }
 });
 
@@ -66,7 +71,5 @@ taskRouter.delete("/:taskID", auth, async (req, res) => {
     res.status(500).json({ msg: error.message });
   }
 });
-
-
 
 module.exports = { taskRouter };
