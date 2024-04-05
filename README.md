@@ -90,7 +90,7 @@ Backend
 - Connected to MongoDB database.
 
 ### Contributors
-- [Your Name]
+- Vishnuraj K R
 
 Feel free to reach out for any queries or concerns related to the application. Happy task managing!
 
