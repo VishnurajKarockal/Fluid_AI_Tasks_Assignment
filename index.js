@@ -3,6 +3,7 @@ const { connection } = require("./config/db");
 const { userRouter } = require("./Routes/users.routes");
 const { taskRouter } = require("./Routes/tasks.routes");
 var cron = require("node-cron");
+require("dotenv").config();
 const app = express();
 app.use(express.json());
 
@@ -37,7 +38,7 @@ cron.schedule("0 0 * * *", async () => {
   }
 });
 
-app.listen(8080, async () => {
+app.listen(process.env.port, async () => {
   try {
     await connection;
     console.log("Connected to the DB");
@@ -46,3 +47,5 @@ app.listen(8080, async () => {
     console.log("Error while connecting");
   }
 });
+
+module.exports = { app };
