@@ -9,13 +9,13 @@ taskRouter.use(express.json());
 //duedate format -> 2024-04-10T12:00:00Z
 taskRouter.post("/create", auth, async (req, res) => {
   try {
-    const { title, description, duedate } = req.body;
+    const { title, description, duedate, userID } = req.body;
     if (!title || !description || !duedate) {
       return res
         .status(400)
         .json({ error: "Title, description, and duedate are required" });
     }
-    const task = new taskModel({ title, description, duedate });
+    const task = new taskModel({ title, description, duedate, userID });
     await task.save();
     const { username } = req.body;
     res.status(200).json({ msg: `New task has been created by ${username}` });
@@ -52,9 +52,19 @@ taskRouter.get("/:taskID", auth, async (req, res) => {
 // To update a task
 taskRouter.patch("/:taskID", auth, async (req, res) => {
   const { taskID } = req.params;
+  const { userID } = req.body;
   const payload = req.body;
+
   try {
-    const task = await taskModel.findByIdAndUpdate(taskID, payload);
+    const task = await taskModel.findOneAndUpdate(
+      { _id: taskID, userID },
+      payload
+    );
+    if (!task) {
+      return res.status(404).json({
+        msg: "Task not found or you don't have permission to update this task",
+      });
+    }
     res.status(200).json({ msg: `Task has been updated successfully` });
   } catch (error) {
     res.status(500).json({ msg: error.message });
@@ -64,8 +74,15 @@ taskRouter.patch("/:taskID", auth, async (req, res) => {
 // To delete a task
 taskRouter.delete("/:taskID", auth, async (req, res) => {
   const { taskID } = req.params;
+  const { userID } = req.body;
+
   try {
-    await taskModel.findByIdAndDelete(taskID);
+    const task = await taskModel.findOneAndDelete({ _id: taskID, userID });
+    if (!task) {
+      return res.status(404).json({
+        msg: "Task not found or you don't have permission to delete this task",
+      });
+    }
     res.status(200).json({ msg: `Task has been deleted successfully` });
   } catch (error) {
     res.status(500).json({ msg: error.message });
