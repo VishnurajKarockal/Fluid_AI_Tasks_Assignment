@@ -1,5 +1,5 @@
 const express = require("express");
-const { connection } = require("./config/db");
+const { connection, connectDB } = require("./config/db");
 const { userRouter } = require("./Routes/users.routes");
 const { taskRouter } = require("./Routes/tasks.routes");
 var cron = require("node-cron");
@@ -38,14 +38,13 @@ cron.schedule("0 0 * * *", async () => {
   }
 });
 
-app.listen(process.env.port, async () => {
-  try {
-    await connection;
-    console.log("Connected to the DB");
-    console.log("Server is running at port 8080");
-  } catch (error) {
-    console.log("Error while connecting");
-  }
-});
+const PORT = process.env.PORT || 8080;
+connectDB()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server is running at port ${PORT}`);
+    });
+  })
+  .catch((err) => console.error("Error starting server:", err));
 
 module.exports = { app };
